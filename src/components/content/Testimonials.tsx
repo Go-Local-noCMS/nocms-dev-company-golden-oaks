@@ -1,187 +1,227 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Star, Zap, CheckCircle, Heart } from "lucide-react";
 
 export interface Testimonial {
   quote: string;
-  author: string;
-  relationship?: string;
-  rating?: number;
-  image?: string;
+  name: string;
+  relation: string;
+  photo: string;
 }
 
 interface TestimonialsProps {
   testimonials?: Testimonial[];
-  variant?: "shelf" | "cards" | "single";
-  heading?: string;
+  rating?: { score: number; count: string };
+  showBadges?: boolean;
 }
 
 const defaultTestimonials: Testimonial[] = [
   {
-    quote: "Moving Mom to this community was the best decision our family ever made. The staff treats every resident like family, and she has never been happier.",
-    author: "Sarah Mitchell",
-    relationship: "Daughter of Resident",
-    rating: 5,
+    quote:
+      "My mother has blossomed at Golden Oaks. The staff treats her like family, not just a resident. She\u2019s made genuine friendships and stays engaged with activities she loves.",
+    name: "Margaret Chen",
+    relation: "Daughter of a resident",
+    photo:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
   },
   {
-    quote: "I was nervous about giving up my home, but this community has given me a richer life than I ever imagined. The activities, the friendships, the care — it is truly exceptional.",
-    author: "Robert Chen",
-    relationship: "Resident since 2022",
-    rating: 5,
+    quote:
+      "Dad moved into Independent Living last year, and it\u2019s been transformative. He\u2019s exercising regularly, joined the book club, and tells me he feels like a teenager again.",
+    name: "James Rodriguez",
+    relation: "Son of a resident",
+    photo:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
   },
   {
-    quote: "The memory care program gave us peace of mind we had not felt in years. Knowing Dad is safe, engaged, and cared for by trained professionals means everything.",
-    author: "Jennifer Park",
-    relationship: "Daughter of Memory Care Resident",
-    rating: 5,
+    quote:
+      "The Memory Care team showed us extraordinary patience and compassion with my grandmother. They explained everything and involved us in every care decision along the way.",
+    name: "Sarah Williams",
+    relation: "Granddaughter",
+    photo:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
   },
   {
-    quote: "What surprised me most was how vibrant life is here. Between the fitness classes, art workshops, and social events, my calendar is fuller than it was ten years ago.",
-    author: "Margaret Torres",
-    relationship: "Independent Living Resident",
-    rating: 5,
+    quote:
+      "We toured five communities before finding Golden Oaks. The transparency, the warmth of the staff, and the quality of the dining program set them apart immediately. Mom loves it here.",
+    name: "Linda Patel",
+    relation: "Daughter of a resident",
+    photo:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80",
+  },
+  {
+    quote:
+      "The Assisted Living program gave my husband back his confidence. The care team knows him by name, understands his routines, and treats him with such dignity. I sleep better at night knowing he\u2019s here.",
+    name: "Dorothy Huang",
+    relation: "Wife of a resident",
+    photo:
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80",
+  },
+  {
+    quote:
+      "What impressed us most was how they handled the transition. The team made moving day feel like a celebration, not a loss. Two months in, my father says this is the happiest he\u2019s been in years.",
+    name: "Robert Kim",
+    relation: "Son of a resident",
+    photo:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
   },
 ];
 
+const cardBgColors = [
+  "#F2DDD4", // blush
+  "#DDE8DC", // sage
+  "#E5CDB5", // toasted cream
+  "#E4C0B0", // dusty rose
+  "#F5E6C8", // honey
+  "#DBBAA8", // light terra
+];
+
+const badges = [
+  { Icon: Zap, label: "State Licensed", sublabel: "Dept. of Health" },
+  { Icon: Star, label: "Best of Senior Living", sublabel: "SeniorAdvisor 2025" },
+  { Icon: CheckCircle, label: "CARF Accredited", sublabel: "Continuing Accreditation" },
+  { Icon: Heart, label: "Caring Star 2025", sublabel: "Caring.com" },
+];
+
+function GoldStars() {
+  return (
+    <div className="flex gap-[3px] mb-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className="w-4 h-4 fill-accent stroke-accent"
+          aria-hidden="true"
+        />
+      ))}
+    </div>
+  );
+}
+
 export function Testimonials({
   testimonials = defaultTestimonials,
-  variant = "cards",
-  heading = "What Families Are Saying",
+  rating = { score: 4.8, count: "120+" },
+  showBadges = true,
 }: TestimonialsProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const next = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  const prev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (variant !== "shelf") return;
-    const interval = setInterval(next, 6000);
-    return () => clearInterval(interval);
-  }, [variant, testimonials.length]);
+    const track = trackRef.current;
+    if (!track) return;
+    // Duplicate all cards for seamless infinite loop
+    const cards = track.innerHTML;
+    track.innerHTML = cards + cards;
+  }, []);
 
-  if (variant === "single") {
-    const t = testimonials[currentIndex];
-    return (
-      <section className="bg-surface py-16 lg:py-24" id="testimonials">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-text mb-10">{heading}</h2>
-          <Quote className="h-10 w-10 text-primary/20 mx-auto mb-6" aria-hidden="true" />
-          <blockquote>
-            <p className="text-xl text-text leading-relaxed italic mb-6">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-            <footer>
-              <div className="flex items-center justify-center gap-1 mb-3">
-                {Array.from({ length: t.rating ?? 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-accent text-accent" aria-hidden="true" />
-                ))}
-              </div>
-              <cite className="not-italic font-semibold text-text">{t.author}</cite>
-              {t.relationship && (
-                <p className="text-muted text-sm mt-1">{t.relationship}</p>
-              )}
-            </footer>
-          </blockquote>
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button
-              onClick={prev}
-              className="h-10 w-10 rounded-full border border-text/10 flex items-center justify-center hover:bg-surface transition-colors"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="h-5 w-5 text-text" />
-            </button>
-            <span className="text-sm text-muted">
-              {currentIndex + 1} / {testimonials.length}
-            </span>
-            <button
-              onClick={next}
-              className="h-10 w-10 rounded-full border border-text/10 flex items-center justify-center hover:bg-surface transition-colors"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="h-5 w-5 text-text" />
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  return (
+    <section className="py-20 sm:py-24 bg-white overflow-hidden">
+      <style>{`
+        @keyframes shelf-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+      `}</style>
 
-  if (variant === "shelf") {
-    return (
-      <section className="bg-surface py-16 lg:py-24 overflow-hidden" id="testimonials">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
-          <h2 className="font-heading text-3xl sm:text-4xl font-bold text-text text-center">{heading}</h2>
-        </div>
-        <div className="relative">
-          <div
-            ref={scrollRef}
-            className="flex gap-6 px-4 transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(-${currentIndex * 340}px)` }}
-          >
-            {(testimonials ?? []).map((t, i) => (
-              <div
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Section heading */}
+        <h2
+          className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-text text-center tracking-tight"
+          style={{ textWrap: "balance" } as React.CSSProperties}
+        >
+          What Families Are Saying
+        </h2>
+
+        {/* Rating bar */}
+        <div className="flex items-center justify-center gap-3 mt-6 mb-10 flex-wrap">
+          <div className="flex gap-[3px]">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
                 key={i}
-                className="min-w-[320px] max-w-[320px] bg-background rounded-xl p-6 shadow-sm border border-text/5"
-              >
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-accent text-accent" aria-hidden="true" />
-                  ))}
-                </div>
-                <p className="text-text text-sm leading-relaxed italic mb-4">&ldquo;{t.quote}&rdquo;</p>
-                <p className="font-semibold text-text text-sm">{t.author}</p>
-                {t.relationship && <p className="text-muted text-xs">{t.relationship}</p>}
-              </div>
+                className="w-5 h-5 fill-accent stroke-accent"
+                aria-hidden="true"
+              />
             ))}
           </div>
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button onClick={prev} className="h-10 w-10 rounded-full border border-text/10 flex items-center justify-center hover:bg-background transition-colors" aria-label="Previous">
-              <ChevronLeft className="h-5 w-5 text-text" />
-            </button>
-            <button onClick={next} className="h-10 w-10 rounded-full border border-text/10 flex items-center justify-center hover:bg-background transition-colors" aria-label="Next">
-              <ChevronRight className="h-5 w-5 text-text" />
-            </button>
-          </div>
+          <span className="text-xl font-bold text-text">{rating.score}</span>
+          <span className="text-base text-text/60">
+            from {rating.count} reviews
+          </span>
         </div>
-      </section>
-    );
-  }
+      </div>
 
-  /* cards variant (default) */
-  return (
-    <section className="bg-surface py-16 lg:py-24" id="testimonials">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-heading text-3xl sm:text-4xl font-bold text-text text-center mb-12">{heading}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+      {/* Shelf track wrapper — full bleed */}
+      <div className="relative overflow-hidden pb-2">
+        <div
+          ref={trackRef}
+          className="flex gap-7"
+          style={{
+            animation: "shelf-scroll 30s linear infinite",
+            width: "max-content",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLDivElement).style.animationPlayState = "paused";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLDivElement).style.animationPlayState = "running";
+          }}
+        >
           {(testimonials ?? []).map((t, i) => (
             <div
               key={i}
-              className="bg-background rounded-xl p-8 shadow-sm border border-text/5 hover:shadow-md transition-shadow"
+              className="min-w-[360px] max-w-[360px] flex-shrink-0 rounded-xl p-8 transition-all duration-[350ms] ease-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
+              style={{ backgroundColor: cardBgColors[i % cardBgColors.length] }}
             >
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-accent text-accent" aria-hidden="true" />
-                ))}
-              </div>
-              <Quote className="h-6 w-6 text-primary/15 mb-3" aria-hidden="true" />
-              <p className="text-text leading-relaxed italic mb-6">
-                &ldquo;{t.quote}&rdquo;
+              <GoldStars />
+              <p className="text-base italic text-text/80 leading-[1.7] mb-6">
+                \u201C{t.quote}\u201D
               </p>
-              <div className="flex items-center gap-3">
-                {t.image && (
-                  <img src={t.image} alt={t.author} className="h-10 w-10 rounded-full object-cover" />
-                )}
+              <div className="flex items-center gap-3.5">
+                <img
+                  src={t.photo}
+                  alt={t.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-secondary-light"
+                  loading="lazy"
+                />
                 <div>
-                  <p className="font-semibold text-text text-sm">{t.author}</p>
-                  {t.relationship && <p className="text-muted text-xs">{t.relationship}</p>}
+                  <span className="block text-base font-semibold text-text">
+                    {t.name}
+                  </span>
+                  <span className="text-base text-text/60">{t.relation}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Accreditation badges */}
+      {showBadges && (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-10 pt-16 pb-2 flex-wrap">
+            {badges.map((badge) => (
+              <div
+                key={badge.label}
+                className="flex items-center gap-3 opacity-60 transition-opacity duration-300 hover:opacity-100"
+              >
+                <div className="w-11 h-11 bg-primary-light rounded-full flex items-center justify-center">
+                  <badge.Icon
+                    className="w-[22px] h-[22px] text-primary-dark"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div>
+                  <span className="block text-base font-semibold text-text/80 leading-tight">
+                    {badge.label}
+                  </span>
+                  <span className="block text-base text-text/50 font-normal">
+                    {badge.sublabel}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

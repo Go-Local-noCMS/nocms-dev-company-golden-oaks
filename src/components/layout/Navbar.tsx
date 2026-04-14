@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Phone, Menu, X, ChevronDown } from "lucide-react";
 import { navigationLinks, type NavLink } from "@/data/site-config";
 import skinConfig from "@/skin.config";
@@ -23,9 +23,17 @@ export function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrolled(currentY > 20);
+      if (currentY > lastScrollY.current + 5 && currentY > 50) setHidden(true);
+      else if (currentY < lastScrollY.current - 5) setHidden(false);
+      lastScrollY.current = currentY;
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -49,6 +57,8 @@ export function Navbar({
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
+        hidden ? "-translate-y-full" : "translate-y-0"
+      } transition-transform duration-300 ${
         scrolled
           ? "bg-primary shadow-lg shadow-primary/15"
           : "bg-primary"
@@ -64,13 +74,13 @@ export function Navbar({
 
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex h-[72px] items-center justify-between">
-          {/* Logo */}
+          {/* Oak-leaf logo */}
           <a href="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center">
-              <span className="text-white font-heading text-lg font-bold">
-                {logo.charAt(0)}
-              </span>
-            </div>
+            <svg viewBox="0 0 100 100" className="h-9 w-9" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 10 Q70 20 75 40 Q80 50 75 60 Q70 70 50 80 Q30 70 25 60 Q20 50 25 40 Q30 20 50 10 M50 25 Q55 30 58 35 M50 35 Q60 40 65 45 M45 40 Q40 45 38 50"
+                fill="none" stroke="#DDE8DC" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              <ellipse cx="50" cy="50" rx="8" ry="10" fill="#B5654A"/>
+            </svg>
             <span className="font-heading text-xl font-bold text-white tracking-tight group-hover:text-white/80 transition-colors">
               {logo}
             </span>
@@ -101,6 +111,8 @@ export function Navbar({
                       aria-hidden="true"
                     />
                   </button>
+                  {/* Invisible bridge between trigger and dropdown */}
+                  <div className="absolute top-full left-0 right-0 h-4" aria-hidden="true" />
                   {openDropdown === link.label && (
                     <div className="absolute top-full left-0 mt-2 w-72 rounded-md bg-background border border-text/5 shadow-xl shadow-text/10 py-2">
                       {link.children.map((child) => (
@@ -135,7 +147,7 @@ export function Navbar({
           {/* Right side */}
           <div className="hidden lg:flex items-center gap-5">
             <a
-              href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+              href={`tel:${phone.replace(/[^\\d+]/g, "")}`}
               className="flex items-center gap-2 text-sm text-white/80 hover:text-white font-semibold transition-colors"
             >
               <Phone className="h-4 w-4" aria-hidden="true" />
@@ -191,7 +203,7 @@ export function Navbar({
             ))}
             <div className="pt-4 px-4 space-y-3 border-t border-white/10 mt-4">
               <a
-                href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                href={`tel:${phone.replace(/[^\\d+]/g, "")}`}
                 className="flex items-center gap-2 text-sm text-white/80 font-semibold"
               >
                 <Phone className="h-4 w-4" aria-hidden="true" />
