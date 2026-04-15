@@ -1,4 +1,14 @@
-export type { SkinConfig } from "@/skin.config";
+export interface SkinConfig {
+  heroVariant: "video" | "image" | "search" | "simple";
+  dividerMotif: "leaf" | "golden-dot" | "line";
+  backgroundPattern: "leaf-vine" | "none";
+  brandName: string;
+  tagline: string;
+  phone: string;
+  address: string;
+  email?: string;
+}
+
 export { default as skinConfig } from "@/skin.config";
 
 /**
